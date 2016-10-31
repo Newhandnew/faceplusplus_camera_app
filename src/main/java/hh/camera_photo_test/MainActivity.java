@@ -2,15 +2,12 @@ package hh.camera_photo_test;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 //import android.os.Handler;
 //import android.os.HandlerThread;
 //import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.StrictMode;
+//import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -42,8 +39,8 @@ public class MainActivity extends Activity {
 
         imageView = (ImageView) this.findViewById(R.id.imageView1);
         Button photoButton = (Button) this.findViewById(R.id.button1);
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+//        StrictMode.setThreadPolicy(policy);
 //        detectThread = new HandlerThread("detect");
 //        detectThread.start();
 //        detectHandler = new Handler(detectThread.getLooper());
@@ -87,7 +84,9 @@ public class MainActivity extends Activity {
 //
 //                @Override
 //                public void run() {
-                    Face[] faceinfo = detecter.findFaces(photo);// 进行人脸检测
+
+
+            Face[] faceinfo = detecter.findFaces(photo);// 进行人脸检测
                     if (faceinfo == null) {
                         runOnUiThread(new Runnable() {
 
@@ -99,7 +98,14 @@ public class MainActivity extends Activity {
                         });
                         return;
                     } else {
-                        connect();
+                        new Thread(new Runnable(){
+                            @Override
+                            public void run() {
+                                connect();
+                            }
+                        }).start();
+
+
 //                        new Connection().execute();
                     }
 //                }
