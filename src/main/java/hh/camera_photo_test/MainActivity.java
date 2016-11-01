@@ -3,11 +3,10 @@ package hh.camera_photo_test;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-//import android.os.Handler;
-//import android.os.HandlerThread;
-//import android.os.AsyncTask;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.Bundle;
-//import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -28,10 +27,7 @@ public class MainActivity extends Activity {
     private static final int CAMERA_REQUEST = 1888;
     ImageView imageView;
     FaceDetecter detecter = null;
-//    HandlerThread detectThread = null;
-//    Handler detectHandler = null;
     HttpRequests request = null;// 在线api
-    private Bitmap curBitmap;
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
@@ -39,11 +35,6 @@ public class MainActivity extends Activity {
 
         imageView = (ImageView) this.findViewById(R.id.imageView1);
         Button photoButton = (Button) this.findViewById(R.id.button1);
-//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-//        StrictMode.setThreadPolicy(policy);
-//        detectThread = new HandlerThread("detect");
-//        detectThread.start();
-//        detectHandler = new Handler(detectThread.getLooper());
 
         detecter = new FaceDetecter();
         detecter.init(this, "af3f15e56f64b3ac869d93f15e71db93");
@@ -67,63 +58,38 @@ public class MainActivity extends Activity {
             final Bitmap photo = (Bitmap) data.getExtras().get("data");
             imageView.setImageBitmap(photo);
 
-//            final String str;
-//            Uri localUri = data.getData();
-//            String[] arrayOfString = new String[1];
-//            arrayOfString[0] = "_data";
-//            Cursor localCursor = getContentResolver().query(localUri,
-//                    arrayOfString, null, null, null);
-//            if (localCursor == null)
-//                return;
-//            localCursor.moveToFirst();
-//            str = localCursor.getString(localCursor
-//                    .getColumnIndex(arrayOfString[0]));
-//            localCursor.close();
-//            curBitmap = getScaledBitmap(str, 600);
-//            detectHandler.post(new Runnable() {
-//
-//                @Override
-//                public void run() {
-
-
             Face[] faceinfo = detecter.findFaces(photo);// 进行人脸检测
-                    if (faceinfo == null) {
-                        runOnUiThread(new Runnable() {
+            if (faceinfo == null) {
+                runOnUiThread(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity.this, "未发现人脸信息", Toast.LENGTH_LONG)
-                                        .show();
-                            }
-                        });
-                        return;
-                    } else {
-                        new Thread(new Runnable(){
-                            @Override
-                            public void run() {
-                                connect();
-                            }
-                        }).start();
-
-
-//                        new Connection().execute();
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "未发现人脸信息", Toast.LENGTH_LONG)
+                                .show();
                     }
-//                }
-//            });
+                });
+                return;
+            } else {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        connectAPI();
+                    }
+                }).start();
+                final Bitmap bit = getFaceInfoBitmap(faceinfo, photo);
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        imageView.setImageBitmap(bit);
+                        System.gc();
+                    }
+                });
+            }
         }
     }
 
-//    private class Connection extends AsyncTask {
-//
-//        @Override
-//        protected Object doInBackground(Object... arg0) {
-//            connect();
-//            return null;
-//        }
-//
-//    }
-
-    private void connect() {
+    private void connectAPI() {
         //在线api交互
         try {
             JSONObject jsonObject = request.offlineDetect(detecter.getImageByteArray(),detecter.getResultJsonString(), new PostParameters());
@@ -152,18 +118,22 @@ public class MainActivity extends Activity {
         }
     }
 
-//    public static Bitmap getScaledBitmap(String fileName, int dstWidth)
-//    {
-//        BitmapFactory.Options localOptions = new BitmapFactory.Options();
-//        localOptions.inJustDecodeBounds = true;
-//        BitmapFactory.decodeFile(fileName, localOptions);
-//        int originWidth = localOptions.outWidth;
-//        int originHeight = localOptions.outHeight;
-//
-//        localOptions.inSampleSize = originWidth > originHeight ? originWidth / dstWidth
-//                : originHeight / dstWidth;
-//        localOptions.inJustDecodeBounds = false;
-//        return BitmapFactory.decodeFile(fileName, localOptions);
-//    }
+    public static Bitmap getFaceInfoBitmap(Face[] faceinfos,
+                                           Bitmap oribitmap) {
+        Bitmap tmp;
+        tmp = oribitmap.copy(Bitmap.Config.ARGB_8888, true);
 
+        Canvas localCanvas = new Canvas(tmp);
+        Paint localPaint = new Paint();
+        localPaint.setColor(0xff0000ff);
+        localPaint.setStyle(Paint.Style.STROKE);
+        for (Face localFaceInfo : faceinfos) {
+            RectF rect = new RectF(oribitmap.getWidth() * localFaceInfo.left, oribitmap.getHeight()
+                    * localFaceInfo.top, oribitmap.getWidth() * localFaceInfo.right,
+                    oribitmap.getHeight()
+                            * localFaceInfo.bottom);
+            localCanvas.drawRect(rect, localPaint);
+        }
+        return tmp;
+    }
 }
