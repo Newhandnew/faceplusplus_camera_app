@@ -4,15 +4,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="Take a Photo" >
-    </Button>
-
     <ImageView
         android:id="@+id/imageView1"
         android:layout_width="fill_parent"
@@ -21,6 +12,41 @@
         android:layout_alignParentTop="true"
         android:src="@mipmap/ic_launcher" >
     </ImageView>
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Take a Photo"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+    </Button>
+
+    <Button
+        android:text="ADD"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/btn_add" />
+
+    <Button
+        android:text="Recognition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/btn_recognition" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:text="Name"
+        android:ems="10"
+        android:id="@+id/text_name"
+        android:layout_above="@+id/btn_add"
+        android:layout_alignStart="@+id/btn_add" />
 
 </RelativeLayout>
 
