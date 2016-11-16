@@ -141,6 +141,7 @@ public class MainActivity extends Activity {
                     public void run() {
                         Toast.makeText(MainActivity.this, "age: " + age, Toast.LENGTH_LONG)
                                 .show();
+                        faceName.setText("");
                     }
                 });
             }
@@ -163,13 +164,28 @@ public class MainActivity extends Activity {
 
                 @Override
                 public void run() {
-                    Toast.makeText(MainActivity.this, "add successfully", Toast.LENGTH_LONG)
+                    Toast.makeText(MainActivity.this, "create person successfully", Toast.LENGTH_LONG)
                             .show();
                 }
             });
         }
         catch (FaceppParseException e) {
-            // TODO 自动生成的 catch 块
+            // if add person fail, add face
+            try {
+                request.personAddFace(new PostParameters().setGroupName("group_test").setPersonName(faceName.getText().toString()).setFaceId(faceID));
+                request.trainIdentify(new PostParameters().setGroupName("group_test"));
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "add face successfully", Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+            }
+            catch (FaceppParseException err) {
+                err.printStackTrace();
+            }
             e.printStackTrace();
         }
     }
@@ -178,17 +194,30 @@ public class MainActivity extends Activity {
         try {
             JSONObject jsonObject = request.recognitionIdentify(new PostParameters().setGroupName("group_test").setKeyFaceId(faceID));
             try {
-                final String matchPerson = jsonObject.getJSONArray("face")
+                String matchedConfidence = jsonObject.getJSONArray("face")
                         .getJSONObject(0)
                         .getJSONArray("candidate")
                         .getJSONObject(0)
-                        .getString("person_name");
-
+                        .getString("confidence");
+                float fConfidence = Float.parseFloat(matchedConfidence);
+                Log.d("matched confidence", "confidence: " + fConfidence);
+                final String matchedName;
+                int threshold = 20;
+                if (fConfidence > threshold) {
+                    matchedName = jsonObject.getJSONArray("face")
+                            .getJSONObject(0)
+                            .getJSONArray("candidate")
+                            .getJSONObject(0)
+                            .getString("person_name");
+                }
+                else {
+                    matchedName = "No matched name";
+                }
                 runOnUiThread(new Runnable() {
 
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.this, matchPerson, Toast.LENGTH_LONG)
+                        Toast.makeText(MainActivity.this, matchedName, Toast.LENGTH_LONG)
                                 .show();
                     }
                 });
